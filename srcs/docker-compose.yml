@@ -1,0 +1,63 @@
+version: "3.9"
+
+services:
+  wordpress:
+    depends_on:
+      - mariadb
+    build:
+      context: ./requirements/wordpress
+    image: wordpress
+    container_name: wordpress
+    env_file:
+      - env.env
+    volumes:
+      - wd:/var/www/html/
+    restart: always
+    networks:
+      - plop 
+  mariadb:
+    build:
+     context: ./requirements/mariadb
+    image: mariadb
+    container_name: mariadb
+    env_file:
+      - env.env
+    volumes:
+      - db:/var/lib/mysql/
+    restart: always
+    networks:
+      - plop 
+  
+  nginx:
+    depends_on:
+      - wordpress
+    build:
+      context: ./requirements/nginx
+    image: nginx
+    container_name: nginx
+    volumes:
+      - wd:/var/www/html/
+    restart: always
+    ports:
+      - 443:443
+    networks:
+      - plop 
+
+networks:
+  plop:
+    driver: bridge
+
+volumes:
+  wd:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/alebross/data/wp
+  db:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/alebross/data/db
+
